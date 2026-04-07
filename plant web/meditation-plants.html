@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ECOGROW - Meditation Grove</title>
+    <style>
+        :root {
+            --accent-purple: #c8b6ff;
+            --glass: rgba(255, 255, 255, 0.08);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-image: linear-gradient(rgba(10, 0, 25, 0.7), rgba(10, 0, 25, 0.7)), url('logo35.jpg'); 
+            background-size: cover; background-position: center; background-attachment: fixed;
+            background-color: #0d0216; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: white; min-height: 100vh; overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            perspective: 1200px;
+        }
+
+        /* --- 3D ENTRANCE ANIMATIONS --- */
+        @keyframes headerDrop3D {
+            0% { opacity: 0; transform: translateY(-80px) rotateX(-40deg) scale(0.8); }
+            100% { opacity: 1; transform: translateY(0) rotateX(0) scale(1); }
+        }
+
+        @keyframes cardPop3D {
+            0% { opacity: 0; transform: translateY(100px) translateZ(-200px) rotateX(30deg) scale(0.8); }
+            100% { opacity: 1; transform: translateY(0) translateZ(0) rotateX(0) scale(1); }
+        }
+
+        /* --- NAVIGATION & EAGLE --- */
+        .nav-container { position: fixed; top: 15px; right: 15px; z-index: 4000; display: flex; align-items: center; }
+        
+        @keyframes floatUpDown {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .eagle-trigger { 
+            font-size: 35px; cursor: pointer; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); 
+            transition: transform 0.5s; animation: floatUpDown 3s ease-in-out infinite; 
+        }
+
+        .eagle-bubble-nav {
+            background: #ffffff; color: #240046; padding: 6px 10px; border-radius: 12px;
+            font-size: 11px; font-weight: bold; text-align: center; width: 120px;
+            border: 2px solid var(--accent-purple); margin-right: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); position: relative;
+            animation: floatUpDown 3s ease-in-out infinite; pointer-events: none;
+        }
+
+        .eagle-bubble-nav::after {
+            content: ''; position: absolute; top: 50%; right: -8px; transform: translateY(-50%);
+            border-width: 6px 0 6px 6px; border-style: solid; border-color: transparent transparent transparent var(--accent-purple);
+        }
+        
+        #eagle-menu {
+            position: absolute; top: 45px; right: 0;
+            background: rgba(20, 5, 35, 0.98); backdrop-filter: blur(15px);
+            border: 1px solid var(--border); border-radius: 15px;
+            padding: 8px; width: 180px; display: none; box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            transform-origin: top right;
+        }
+        #eagle-menu.show { display: block; animation: fadeInScale 0.3s ease-out; }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .menu-item {
+            display: block; color: white; text-decoration: none; padding: 10px; margin: 5px 0;
+            border-radius: 10px; font-weight: 600; font-size: 14px; transition: 0.4s; cursor: pointer;
+        }
+        .menu-item:hover { background: var(--glass); color: var(--accent-purple); }
+
+        /* --- HEADER --- */
+        header { 
+            text-align: center; padding: 60px 10px 15px 10px; 
+            animation: headerDrop3D 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        h1 { font-size: 1.8rem; text-shadow: 0 4px 15px rgba(0,0,0,0.8); margin: 0; color: var(--accent-purple); }
+        .subtitle { font-size: 0.9rem; opacity: 0.8; margin-top: 5px; }
+
+        /* --- PLANT GRID --- */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 10px 160px 10px; perspective: 1000px; }
+        .plant-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+
+        .plant-card {
+            background: var(--glass); backdrop-filter: blur(12px); border-radius: 15px;
+            border: 1px solid var(--border); transition: all 0.5s ease; cursor: pointer;
+            display: flex; flex-direction: column; overflow: hidden; opacity: 0;
+            animation: cardPop3D 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        .plant-card:nth-child(1) { animation-delay: 0.3s; }
+        .plant-card:nth-child(2) { animation-delay: 0.6s; }
+        .plant-card:nth-child(3) { animation-delay: 0.9s; }
+        .plant-card:nth-child(4) { animation-delay: 1.2s; }
+
+        .plant-photo { width: 100%; height: 140px; object-fit: cover; }
+        .plant-info { padding: 8px; text-align: center; background: linear-gradient(transparent, rgba(0,0,0,0.8)); }
+        .plant-card h3 { color: white; margin: 0; font-size: 14px; }
+
+        /* --- THE BOY CHARACTER (FIXED & ANIMATED) --- */
+        #character-container {
+            position: fixed; bottom: 15px; left: -400px; 
+            display: flex; flex-direction: row; align-items: flex-end; 
+            z-index: 5000; pointer-events: none; width: 100%; 
+            transition: left 2.5s cubic-bezier(0.25, 1, 0.5, 1); 
+        }
+        #character-container.arrived { left: 10px; }
+        #character-container.exit { left: 120vw !important; transition: left 3s ease-in !important; }
+
+        .boy-emoji { 
+            font-size: 65px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); 
+            pointer-events: auto; transform-origin: bottom; margin-right: 10px;
+        }
+        
+        .speech-bubble {
+            background: #ffffff; color: #240046; padding: 12px; border-radius: 15px;
+            font-size: 13px; width: 60vw; max-width: 220px; max-height: 200px; overflow-y: auto;
+            opacity: 0; transform: scale(0.8) translateX(-20px);
+            border: 2px solid var(--accent-purple); transition: all 0.4s ease;
+            pointer-events: auto; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); position: relative;
+        }
+
+        .speech-bubble::after {
+            content: ''; position: absolute; bottom: 15px; left: -10px;
+            border-width: 8px 10px 8px 0; border-style: solid; border-color: transparent var(--accent-purple) transparent transparent;
+        }
+
+        #character-container.speaking .speech-bubble { opacity: 1; transform: scale(1) translateX(0); }
+
+        .plant-name { color: #3c096c; font-weight: 800; border-bottom: 2px solid var(--accent-purple); display: block; padding-bottom: 3px; font-size: 14px;}
+        .tip-title { color: #5a189a; font-weight: 800; text-transform: uppercase; font-size: 10px; margin-top: 8px; display: block; }
+
+        @media (min-width: 768px) {
+            h1 { font-size: 3.5rem; }
+            .plant-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; }
+            .plant-photo { height: 250px; }
+            #character-container.arrived { left: 30px; }
+            .boy-emoji { font-size: 90px; }
+            .speech-bubble { max-width: 300px; font-size: 15px; }
+        }
+    </style>
+</head>
+<body onclick="handleFirstClick()" ontouchstart="handleFirstClick()">
+
+    <div class="nav-container">
+        <div class="eagle-bubble-nav" id="eagleBubbleNav">I am an eagle!<br>Click me for more! 🦅</div>
+        <div class="eagle-trigger" onclick="toggleMenu(event)">🦅</div>
+        <div id="eagle-menu">
+            <a onclick="exitTo('home2.html', 'home')" class="menu-item">🏠 Home</a>
+            <a onclick="exitTo('indoor-plants.html', 'indoor')" class="menu-item">🪴 Indoor Plants</a>
+            <a onclick="exitTo('outdoor-plants.html', 'outdoor')" class="menu-item">🌳 Outdoor Trees</a>
+        </div>
+    </div>
+
+    <header>
+        <h1>🧘 Meditation Grove</h1>
+        <p class="subtitle">Sacred Vastu, Health & Cures</p>
+    </header>
+
+    <div class="container">
+        <div class="plant-grid">
+            <div class="plant-card" onclick="explain('sandalwood', event)">
+                <img src="LOGO44.jpg" alt="Sandalwood" class="plant-photo">
+                <div class="plant-info"><h3>Sandalwood (Chandan)</h3></div>
+            </div>
+            <div class="plant-card" onclick="explain('bael', event)">
+                <img src="LOGO45.jpg" alt="Bael" class="plant-photo">
+                <div class="plant-info"><h3>Bael (Bilva)</h3></div>
+            </div>
+            <div class="plant-card" onclick="explain('parijat', event)">
+                <img src="LOGO46.jpg" alt="Parijat" class="plant-photo">
+                <div class="plant-info"><h3>Parijat</h3></div>
+            </div>
+            <div class="plant-card" onclick="explain('kadamba', event)">
+                <img src="LOGO47.jpg" alt="Kadamba" class="plant-photo">
+                <div class="plant-info"><h3>Kadamba</h3></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="character-container">
+        <div class="boy-emoji">🧍🏻‍♂️</div>
+        <div id="speechBubble" class="speech-bubble"></div>
+    </div>
+
+    <script>
+        let hasInteracted = false;
+        const boyContainer = document.getElementById('character-container');
+        const bubble = document.getElementById('speechBubble');
+        const eagleBubbleNav = document.getElementById('eagleBubbleNav');
+        let typeTimer;
+
+        // Arrive Animation
+        window.addEventListener('load', () => {
+            setTimeout(() => { 
+                boyContainer.classList.add('arrived'); 
+            }, 500);
+
+            // Auto-greet after walk if no interaction
+            setTimeout(() => {
+                if (!hasInteracted) {
+                    hasInteracted = true;
+                    explain('greeting');
+                }
+            }, 4000);
+        });
+
+        function toggleMenu(e) { 
+            e.stopPropagation();
+            const menu = document.getElementById('eagle-menu');
+            menu.classList.toggle('show'); 
+            eagleBubbleNav.style.opacity = menu.classList.contains('show') ? '0' : '1';
+        }
+
+        function stopEverything() {
+            window.speechSynthesis.cancel();
+            clearTimeout(typeTimer);
+            boyContainer.classList.remove('speaking');
+        }
+
+        // Navigation with Boy Walking Out
+        function exitTo(url, type) {
+            stopEverything();
+            document.getElementById('eagle-menu').classList.remove('show');
+            let msg = type === 'home' ? "Thank you for visiting! 🙏" : "Let's explore more together! 🚶‍♂️";
+            
+            bubble.innerHTML = "";
+            boyContainer.classList.add('speaking');
+            speakText(msg);
+            
+            let index = 0;
+            function typeExit() {
+                if (index <= msg.length) {
+                    bubble.innerHTML = msg.substring(0, index);
+                    index++;
+                    typeTimer = setTimeout(typeExit, 30);
+                }
+            }
+            typeExit();
+
+            setTimeout(() => { 
+                boyContainer.classList.add('exit');
+                setTimeout(() => { window.location.href = url; }, 3000); 
+            }, 2000); 
+        }
+
+        const plantFacts = {
+            'greeting': '<span class="plant-name">Namaste!</span> 🧘 Tap a sacred tree to learn its Vastu, Health secrets, and Cures.',
+            'sandalwood': '<span class="plant-name">Sandalwood (Chandan) 🪵</span><span class="tip-title">✨ Vastu</span> South-West for peace.<br><span class="tip-title">❤️ Health</span> Aroma calms nerves.<br><span class="tip-title">🌿 Cure</span> Paste treats skin burns.',
+            'bael': '<span class="plant-name">Bael (Bilva) 🔱</span><span class="tip-title">✨ Vastu</span> Center of garden.<br><span class="tip-title">❤️ Health</span> Purifies your surroundings.<br><span class="tip-title">🌿 Cure</span> Fruit juice aids digestion.',
+            'parijat': '<span class="plant-name">Parijat 🌼</span><span class="tip-title">✨ Vastu</span> East side for joy.<br><span class="tip-title">❤️ Health</span> Scent reduces stress.<br><span class="tip-title">🌿 Cure</span> Leaf tea treats joint pain.',
+            'kadamba': '<span class="plant-name">Kadamba 🎋</span><span class="tip-title">✨ Vastu</span> West placement.<br><span class="tip-title">❤️ Health</span> High oxygen provider.<br><span class="tip-title">🌿 Cure</span> Bark heals wounds.'
+        };
+
+        function handleFirstClick() {
+            if (!hasInteracted && boyContainer.classList.contains('arrived')) {
+                hasInteracted = true;
+                explain('greeting');
+            }
+        }
+
+        function speakText(htmlText) {
+            window.speechSynthesis.cancel(); 
+            let cleanText = htmlText.replace(/<\/?[^>]+(>|$)/g, " "); 
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.rate = 0.95; 
+            utterance.onend = () => {
+                setTimeout(() => { if(!window.speechSynthesis.speaking && !boyContainer.classList.contains('exit')) boyContainer.classList.remove('speaking'); }, 2000);
+            };
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function explain(plantKey, e) {
+            if(e) e.stopPropagation();
+            clearTimeout(typeTimer);
+            bubble.innerHTML = ""; 
+            boyContainer.classList.add('speaking');
+            const fullText = plantFacts[plantKey];
+            speakText(fullText);
+            
+            let index = 0;
+            function typeWriter() {
+                if (index <= fullText.length) {
+                    bubble.innerHTML = fullText.substring(0, index);
+                    index++;
+                    bubble.scrollTop = bubble.scrollHeight;
+                    typeTimer = setTimeout(typeWriter, 20); 
+                }
+            }
+            typeWriter();
+        }
+
+        window.onclick = function(e) {
+            handleFirstClick(); 
+            if (!e.target.matches('.eagle-trigger')) {
+                document.getElementById('eagle-menu').classList.remove('show');
+                eagleBubbleNav.style.opacity = '1'; 
+            }
+        }
+    </script>
+</body>
+</html>
